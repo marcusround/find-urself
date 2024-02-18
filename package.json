@@ -11,7 +11,9 @@
   "license": "ISC",
   "dependencies": {
     "express": "^4.17.1",
+    "physijs": "^1.0.4",
     "simple-peer": "^9.11.0",
-    "socket.io": "^4.4.1"
+    "socket.io": "^4.4.1",
+    "three": "^0.119.0"
   }
 }

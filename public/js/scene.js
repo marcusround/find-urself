@@ -10,7 +10,8 @@
 class Scene {
   constructor() {
     //THREE scene
-    this.scene = new THREE.Scene();
+    //this.scene = new THREE.Scene();
+    this.scene = new Physijs.Scene();
 
     //Utility
     this.width = window.innerWidth;
@@ -83,16 +84,16 @@ class Scene {
     let head;
     console.log(rand);
     if(rand < 0.25){
-      head = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), [otherMat,otherMat,otherMat,otherMat,otherMat,videoMaterial]);
+      head = new Physijs.BoxMesh(new THREE.BoxGeometry(1, 1, 1), [otherMat,otherMat,otherMat,otherMat,otherMat,videoMaterial]);
     }
     else if(rand >= 0.25 && rand < 0.5){
-     head = new THREE.Mesh(new THREE.ConeGeometry(3, 5, 36, 7), videoMaterial);
+     head = new Physijs.ConeMesh(new THREE.ConeGeometry(3, 5, 36, 7), videoMaterial);
     }
     else if(rand >= 0.5 && rand < 0.75){
-      head = new THREE.Mesh(new THREE.SphereGeometry(4, 48, 21), videoMaterial);
+      head = new Physijs.SphereMesh(new THREE.SphereGeometry(4, 48, 21), videoMaterial);
     }
     else{
-      head = new THREE.Mesh(new THREE.CylinderGeometry(3, 3, 6, 30, 4), videoMaterial);
+      head = new Physijs.CylinderMesh(new THREE.CylinderGeometry(3, 3, 6, 30, 4), videoMaterial);
     }
 
     // set position of head before adding to parent object
@@ -139,7 +140,7 @@ class Scene {
     for (let id in peers) {
       if (peers[id].group) {
         peers[id].group.position.lerpVectors(peers[id].previousPosition,peers[id].desiredPosition, this.lerpValue);
-        peers[id].group.quaternion.slerpQuaternions(peers[id].previousRotation,peers[id].desiredRotation, this.lerpValue);
+        //peers[id].group.quaternion.slerpQuaternions(peers[id].previousRotation,peers[id].desiredRotation, this.lerpValue);
       }
     }
   }
@@ -230,7 +231,7 @@ function makeVideoMaterial(id) {
 
   let videoMaterial = new THREE.MeshBasicMaterial({
     map: videoTexture,
-    // needsUpdate: true,
+    needsUpdate: true,
     overdraw: true,
     side: THREE.DoubleSide,
   });

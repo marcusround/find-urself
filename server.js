@@ -12,8 +12,10 @@
 
 // express will run our server
 const express = require("express");
+const Physijs = require("physijs");
 const app = express();
 app.use(express.static("public"));
+app.use('/public', express.static('/node_modules/physijs'));
 
 // HTTP will expose our server to the web
 const http = require("http").createServer(app);
