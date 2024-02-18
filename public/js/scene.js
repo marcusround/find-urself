@@ -10,8 +10,10 @@
 class Scene {
   constructor() {
     //THREE scene
-    //this.scene = new THREE.Scene();
-    this.scene = new Physijs.Scene();
+    this.scene = new THREE.Scene();
+    //this.scene = new Physijs.Scene();
+    this.world = new CANNON.World();
+    this.world.gravity.set(0, -9.82, 0)
 
     //Utility
     this.width = window.innerWidth;
@@ -40,6 +42,15 @@ class Scene {
     });
     this.renderer.setClearColor(new THREE.Color("lightblue"));
     this.renderer.setSize(this.width, this.height);
+    this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    this.renderer.toneMappingExposure = 1;
+    this.renderer.outputEncoding = THREE.sRGBEncoding;
+    this.renderer.shadowMap.enabled = true;
+    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    this.renderer.outputEncoding = THREE.sRGBEncoding;
+
+    const pmremGenerator = new THREE.PMREMGenerator( this.renderer );
+    pmremGenerator.compileEquirectangularShader();
 
     // add controls:
     this.controls = new FirstPersonControls(this.scene, this.camera, this.renderer);
@@ -50,6 +61,81 @@ class Scene {
 
     //Setup event listeners for events and handle the states
     window.addEventListener("resize", (e) => this.onWindowResize(e), false);
+
+    //gltf loader
+    // const loader = new THREE.GLTFLoader();
+    var sceneref = this.scene;
+    var renderref = this.renderer;
+    var cameraref = this.camera;
+
+    // const loader = new THREE.GLTFLoader()
+
+				new THREE.RGBELoader()
+					.load('assets/kloppenheim_02_puresky_4k.hdr', function ( texture ) {
+
+						texture.mapping = THREE.EquirectangularReflectionMapping;
+
+						sceneref.background = texture;
+						sceneref.environment = texture;
+
+						renderref.render(sceneref, cameraref);
+
+						// model
+
+						const loader = new THREE.GLTFLoader()
+						loader.load('assets/ballpit.glb', async function ( gltf ) {
+
+							const model = gltf.scene;
+
+							// wait until the model can be added to the scene without blocking due to shader compilation
+
+              console.log(renderref);
+							//await renderref.compileAsync( model, cameraref, sceneref );
+
+							sceneref.add( model );
+
+              renderref.render(sceneref, cameraref);
+			
+						} );
+
+					} );
+    
+    // var sceneref = this.scene;
+    // // Load a glTF resource
+    // loader.load(
+	  // // resource URL
+	  //   'assets/ballpit.glb',
+	  //   // called when the resource is loaded
+	  //   function ( gltf ) {
+
+		//     sceneref.add( gltf.scene );
+    //     //ballpit = gltf.asset;
+    //     console.log(gltf.scene);
+
+		//     gltf.animations; // Array<THREE.AnimationClip>
+		//     gltf.scene; // THREE.Group
+		//     gltf.scenes; // Array<THREE.Group>
+		//     gltf.cameras; // Array<THREE.Camera>
+		//     gltf.asset; // Object
+
+	  //   },
+	  //   // called while loading is progressing
+	  //   function ( xhr ) {
+
+		//     console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+
+	  //   },
+	  //   // called when loading has errors
+	  //   function ( error ) {
+
+    //     console.log(error);
+		//     console.log( 'An error happened' );
+
+	  //   }
+    // );
+
+    //console.log(ballpit);
+    //this.scene.add(ballpit);
 
     // Helpers
     this.scene.add(new THREE.GridHelper(500, 500));
@@ -84,16 +170,16 @@ class Scene {
     let head;
     console.log(rand);
     if(rand < 0.25){
-      head = new Physijs.BoxMesh(new THREE.BoxGeometry(1, 1, 1), [otherMat,otherMat,otherMat,otherMat,otherMat,videoMaterial]);
+      head = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), [otherMat,otherMat,otherMat,otherMat,otherMat,videoMaterial]);
     }
     else if(rand >= 0.25 && rand < 0.5){
-     head = new Physijs.ConeMesh(new THREE.ConeGeometry(3, 5, 36, 7), videoMaterial);
+     head = new THREE.Mesh(new THREE.ConeGeometry(3, 5, 36, 7), videoMaterial);
     }
     else if(rand >= 0.5 && rand < 0.75){
-      head = new Physijs.SphereMesh(new THREE.SphereGeometry(4, 48, 21), videoMaterial);
+      head = new THREE.Mesh(new THREE.SphereGeometry(4, 48, 21), videoMaterial);
     }
     else{
-      head = new Physijs.CylinderMesh(new THREE.CylinderGeometry(3, 3, 6, 30, 4), videoMaterial);
+      head = new THREE.Mesh(new THREE.CylinderGeometry(3, 3, 6, 30, 4), videoMaterial);
     }
 
     // set position of head before adding to parent object
@@ -140,7 +226,7 @@ class Scene {
     for (let id in peers) {
       if (peers[id].group) {
         peers[id].group.position.lerpVectors(peers[id].previousPosition,peers[id].desiredPosition, this.lerpValue);
-        //peers[id].group.quaternion.slerpQuaternions(peers[id].previousRotation,peers[id].desiredRotation, this.lerpValue);
+        peers[id].group.quaternion.slerpQuaternions(peers[id].previousRotation,peers[id].desiredRotation, this.lerpValue);
       }
     }
   }

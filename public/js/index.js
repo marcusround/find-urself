@@ -36,10 +36,6 @@ let mediaConstraints = {
   },
 };
 
-//Physijs configuration
-Physijs.scripts.worker = 'public/js/libs/physijs_worker.js';
-Physijs.scripts.ammo = 'public/js/libs/ammo.js';
-
 ////////////////////////////////////////////////////////////////////////////////
 // Start-Up Sequence:
 ////////////////////////////////////////////////////////////////////////////////
@@ -58,11 +54,8 @@ window.onload = async () => {
   // finally create the threejs scene
   console.log("Creating three.js scene...");
   myScene = new Scene();
-  console.log(THREE.REVISION);
-  //myScene = new Physijs.Scene();
 
   // start sending position data to the server
-  console.log(myScene.getPlayerPosition());
   setInterval(function () {
     mySocket.emit("move", myScene.getPlayerPosition());
   }, 200);
