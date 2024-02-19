@@ -13,7 +13,12 @@ class Scene {
     this.scene = new THREE.Scene();
     //this.scene = new Physijs.Scene();
     this.world = new CANNON.World();
-    this.world.gravity.set(0, -9.82, 0)
+    this.world.gravity.set(0, -9.82, 0);
+
+    this.clock = new THREE.Clock();
+    this.delta;
+    this.head;
+    this.spherebody;
 
     //Utility
     this.width = window.innerWidth;
@@ -67,6 +72,8 @@ class Scene {
     var sceneref = this.scene;
     var renderref = this.renderer;
     var cameraref = this.camera;
+    var worldref = this.world;
+    var modelref;
 
     // const loader = new THREE.GLTFLoader()
 
@@ -89,9 +96,28 @@ class Scene {
 
 							// wait until the model can be added to the scene without blocking due to shader compilation
 
-              console.log(renderref);
+              // console.log(model);
+              // var modelmesh;
+              // var modelbody;
+              // model.traverse(function (child) {
+              //   if ((child instanceof THREE.Mesh)) {
+              //       modelmesh = child;
+              //       modelmesh.receiveShadow = true;
+              //       modelmesh.castShadow = true;
+              //       let modelshape = CreateTrimesh(modelmesh.geometry);
+              //       modelbody = new CANNON.Body({
+              //         mass: 1
+              //       });
+              //       modelbody.addShape(modelshape);
+              //       modelbody.position.x = modelmesh.position.x;
+              //       modelbody.position.y = modelmesh.position.y;
+              //       modelbody.position.z = modelmesh.position.z;
+              //       worldref.addBody(modelbody);
+              //   }
+              // }) 
 							//await renderref.compileAsync( model, cameraref, sceneref );
 
+              modelref = model;
 							sceneref.add( model );
 
               renderref.render(sceneref, cameraref);
@@ -99,40 +125,6 @@ class Scene {
 						} );
 
 					} );
-    
-    // var sceneref = this.scene;
-    // // Load a glTF resource
-    // loader.load(
-	  // // resource URL
-	  //   'assets/ballpit.glb',
-	  //   // called when the resource is loaded
-	  //   function ( gltf ) {
-
-		//     sceneref.add( gltf.scene );
-    //     //ballpit = gltf.asset;
-    //     console.log(gltf.scene);
-
-		//     gltf.animations; // Array<THREE.AnimationClip>
-		//     gltf.scene; // THREE.Group
-		//     gltf.scenes; // Array<THREE.Group>
-		//     gltf.cameras; // Array<THREE.Camera>
-		//     gltf.asset; // Object
-
-	  //   },
-	  //   // called while loading is progressing
-	  //   function ( xhr ) {
-
-		//     console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
-
-	  //   },
-	  //   // called when loading has errors
-	  //   function ( error ) {
-
-    //     console.log(error);
-		//     console.log( 'An error happened' );
-
-	  //   }
-    // );
 
     //console.log(ballpit);
     //this.scene.add(ballpit);
@@ -167,27 +159,22 @@ class Scene {
     let otherMat = new THREE.MeshNormalMaterial();
 
     let rand = Math.random();
-    let head;
-    console.log(rand);
-    if(rand < 0.25){
-      head = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), [otherMat,otherMat,otherMat,otherMat,otherMat,videoMaterial]);
-    }
-    else if(rand >= 0.25 && rand < 0.5){
-     head = new THREE.Mesh(new THREE.ConeGeometry(3, 5, 36, 7), videoMaterial);
-    }
-    else if(rand >= 0.5 && rand < 0.75){
-      head = new THREE.Mesh(new THREE.SphereGeometry(4, 48, 21), videoMaterial);
-    }
-    else{
-      head = new THREE.Mesh(new THREE.CylinderGeometry(3, 3, 6, 30, 4), videoMaterial);
-    }
-
+    this.head = new THREE.Mesh(new THREE.SphereGeometry(0.65, 48, 21), videoMaterial);
+    // let sphereshape = new CANNON.Sphere(1)
+    // this.spherebody = new CANNON.Body({
+    //   mass: 1
+    // })
+    this.head.position.set(0, 0, 0);
+    // this.spherebody.addShape(sphereshape);
+    // this.spherebody.position.x = this.head.position.x;
+    // this.spherebody.position.y = this.head.position.y;
+    // this.spherebody.position.z = this.head.position.z;
+    // this.world.addBody(this.spherebody)
     // set position of head before adding to parent object
-    head.position.set(0, 0, 0);
 
     // https://threejs.org/docs/index.html#api/en/objects/Group
     var group = new THREE.Group();
-    group.add(head);
+    group.add(this.head);
 
     // add group to scene
     this.scene.add(group);
@@ -281,6 +268,47 @@ class Scene {
 
     updateEnvironment();
 
+    this.delta = Math.min(this.clock.getDelta(), 0.1);
+    this.world.step(this.delta);
+
+    // if(this.head !== undefined){
+    //   this.head.position.set(this.spherebody.position.x, this.spherebody.position.y, this.spherebody.position.z)
+    //   this.head.quaternion.set(
+    //     this.spherebody.quaternion.x,
+    //     this.spherebody.quaternion.y,
+    //     this.spherebody.quaternion.z,
+    //     this.spherebody.quaternion.w
+    //   )
+    // }
+
+    //   modelref.traverse(function (child) {
+    //     if ((child instanceof THREE.Mesh)) {
+    //         modelmesh = child;
+    //         modelmesh.receiveShadow = true;
+    //         modelmesh.castShadow = true;
+    //         let modelshape = CreateTrimesh(modelmesh.geometry);
+    //         modelbody = new CANNON.Body({
+    //           mass: 1
+    //         });
+    //         modelmodelbody.addShape(modelshape);
+    //         modelbody.position.x = modelmesh.position.x;
+    //         modelbody.position.y = modelmesh.position.y;
+    //         modelbody.position.z = modelmesh.position.z;
+    //         worldref.addBody(modelbody);
+    //     }
+    //   }) 
+    //   modelmesh.position.set(
+    //     modelbody.position.x,
+    //     monkeyBody.position.y,
+    //     monkeyBody.position.z
+    //   )
+    //   monkeyMesh.quaternion.set(
+    //     monkeyBody.quaternion.x,
+    //     monkeyBody.quaternion.y,
+    //     monkeyBody.quaternion.z,
+    //     monkeyBody.quaternion.w
+    //   )
+
     if (this.frameCount % 25 === 0) {
       this.updateClientVolumes();
     }
@@ -323,4 +351,15 @@ function makeVideoMaterial(id) {
   });
 
   return videoMaterial;
+}
+
+function CreateTrimesh(geometry) {
+  let vertices
+  if (geometry.index === null) {
+      vertices = geometry.attributes.position.array
+  } else {
+      vertices = geometry.clone().toNonIndexed().attributes.position.array
+  }
+  const indices = Object.keys(vertices).map(Number)
+  return new CANNON.Trimesh(vertices, indices)
 }
