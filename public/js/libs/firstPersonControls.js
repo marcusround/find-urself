@@ -217,7 +217,7 @@ class FirstPersonControls {
         var intersectionsDown = this.raycaster.intersectObjects(this.getCollidables())
         var onObject = intersectionsDown.length > 0 && intersectionsDown[0].distance < 0.25
         // Here we talkin bout gravity...
-        // this.velocity.y -= 9.8 * 8.0 * delta; // 100.0 = mass
+        //this.velocity.y -= 9.8 * 8.0 * delta; // 100.0 = mass
 
         // For double-jumping!
         if (this.camera.position.y > 1.7 && this.gravity) {

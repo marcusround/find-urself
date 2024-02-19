@@ -19,6 +19,8 @@ class Scene {
     this.delta;
     this.head;
     this.spherebody;
+    this.balls = [];
+    this.ballbodies = [];
 
     //Utility
     this.width = window.innerWidth;
@@ -93,28 +95,28 @@ class Scene {
 						loader.load('assets/ballpit.glb', async function ( gltf ) {
 
 							const model = gltf.scene;
-
 							// wait until the model can be added to the scene without blocking due to shader compilation
 
               // console.log(model);
-              // var modelmesh;
-              // var modelbody;
-              // model.traverse(function (child) {
-              //   if ((child instanceof THREE.Mesh)) {
-              //       modelmesh = child;
-              //       modelmesh.receiveShadow = true;
-              //       modelmesh.castShadow = true;
-              //       let modelshape = CreateTrimesh(modelmesh.geometry);
-              //       modelbody = new CANNON.Body({
-              //         mass: 1
-              //       });
-              //       modelbody.addShape(modelshape);
-              //       modelbody.position.x = modelmesh.position.x;
-              //       modelbody.position.y = modelmesh.position.y;
-              //       modelbody.position.z = modelmesh.position.z;
-              //       worldref.addBody(modelbody);
-              //   }
-              // }) 
+              var modelmesh;
+              var modelbody;
+              model.traverse(function (child) {
+                if ((child instanceof THREE.Mesh)) {
+                    //child.layers.set(3);
+                    modelmesh = child;
+                    modelmesh.receiveShadow = true;
+                    modelmesh.castShadow = true;
+                    let modelshape = CreateTrimesh(modelmesh.geometry);
+                    modelbody = new CANNON.Body({
+                      mass: 1
+                    });
+                    modelbody.addShape(modelshape);
+                    modelbody.position.x = modelmesh.position.x;
+                    modelbody.position.y = modelmesh.position.y;
+                    modelbody.position.z = modelmesh.position.z;
+                    worldref.addBody(modelbody);
+                }
+              }) 
 							//await renderref.compileAsync( model, cameraref, sceneref );
 
               modelref = model;
@@ -126,8 +128,20 @@ class Scene {
 
 					} );
 
-    //console.log(ballpit);
-    //this.scene.add(ballpit);
+    const planeGeometry = new THREE.PlaneGeometry(100, 100);
+    const phongMaterial = new THREE.MeshPhongMaterial();
+    const planeMesh = new THREE.Mesh(planeGeometry, phongMaterial);
+    planeMesh.position.y = 10;
+    planeMesh.rotateX(-Math.PI / 2);
+    planeMesh.receiveShadow = true;
+    this.scene.add(planeMesh);
+    const planeShape = new CANNON.Plane();
+    const planeBody = new CANNON.Body({
+      mass: 0
+    });
+    planeBody.addShape(planeShape);
+    planeBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2);
+    this.world.addBody(planeBody);
 
     // Helpers
     this.scene.add(new THREE.GridHelper(500, 500));
@@ -160,16 +174,36 @@ class Scene {
 
     let rand = Math.random();
     this.head = new THREE.Mesh(new THREE.SphereGeometry(0.65, 48, 21), videoMaterial);
-    // let sphereshape = new CANNON.Sphere(1)
-    // this.spherebody = new CANNON.Body({
-    //   mass: 1
-    // })
+    // this.head.layers.set(3);
+    let sphereshape = new CANNON.Sphere(1)
+    this.spherebody = new CANNON.Body({
+      mass: 1
+    })
+    this.spherebody.addShape(sphereshape);
+    this.spherebody.position.x = this.head.position.x;
+    this.spherebody.position.y = this.head.position.y;
+    this.spherebody.position.z = this.head.position.z;
+    this.world.addBody(this.spherebody)
     this.head.position.set(0, 0, 0);
-    // this.spherebody.addShape(sphereshape);
-    // this.spherebody.position.x = this.head.position.x;
-    // this.spherebody.position.y = this.head.position.y;
-    // this.spherebody.position.z = this.head.position.z;
-    // this.world.addBody(this.spherebody)
+
+    for(let i = 0; i < 30; i++){
+      let ball = new THREE.Mesh(new THREE.SphereGeometry(0.35, 20, 10), new THREE.MeshPhongMaterial({color: new THREE.Color(Math.random(), Math.random(), Math.random())}));
+      ball.position.set(Math.random()*20, Math.random()*20, Math.random()*20);
+      this.balls.push(ball);
+      this.scene.add(ball);
+      let ballshape = new CANNON.Sphere(1);
+      let ballbody = new CANNON.Body({
+        mass:1
+      })
+      ballbody.addShape(ballshape);
+      ballbody.position.x = ball.position.x;
+      ballbody.position.y = ball.position.y;
+      ballbody.position.z = ball.position.z;
+      this.ballbodies.push(ballbody);
+      this.world.addBody(ballbody);
+    }
+    console.log(this.balls);
+
     // set position of head before adding to parent object
 
     // https://threejs.org/docs/index.html#api/en/objects/Group
@@ -271,15 +305,25 @@ class Scene {
     this.delta = Math.min(this.clock.getDelta(), 0.1);
     this.world.step(this.delta);
 
-    // if(this.head !== undefined){
-    //   this.head.position.set(this.spherebody.position.x, this.spherebody.position.y, this.spherebody.position.z)
-    //   this.head.quaternion.set(
-    //     this.spherebody.quaternion.x,
-    //     this.spherebody.quaternion.y,
-    //     this.spherebody.quaternion.z,
-    //     this.spherebody.quaternion.w
-    //   )
-    // }
+    for(let i = 0; i < this.balls.length; i++){
+        console.log(this.balls[i]);
+        this.balls[i].position.set(this.ballbodies[i].position.x, this.ballbodies[i].position.y, this.ballbodies[i].position.z)
+        this.balls[i].quaternion.set(
+        this.ballbodies[i].quaternion.x,
+        this.ballbodies[i].quaternion.y,
+        this.ballbodies[i].quaternion.z,
+        this.ballbodies[i].quaternion.w
+      )
+    }
+    if(this.head !== undefined){
+      this.head.position.set(this.spherebody.position.x, this.spherebody.position.y, this.spherebody.position.z)
+      this.head.quaternion.set(
+        this.spherebody.quaternion.x,
+        this.spherebody.quaternion.y,
+        this.spherebody.quaternion.z,
+        this.spherebody.quaternion.w
+      )
+    }
 
     //   modelref.traverse(function (child) {
     //     if ((child instanceof THREE.Mesh)) {
@@ -301,12 +345,6 @@ class Scene {
     //     modelbody.position.x,
     //     monkeyBody.position.y,
     //     monkeyBody.position.z
-    //   )
-    //   monkeyMesh.quaternion.set(
-    //     monkeyBody.quaternion.x,
-    //     monkeyBody.quaternion.y,
-    //     monkeyBody.quaternion.z,
-    //     monkeyBody.quaternion.w
     //   )
 
     if (this.frameCount % 25 === 0) {
