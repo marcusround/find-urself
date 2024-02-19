@@ -131,7 +131,7 @@ class Scene {
     const planeGeometry = new THREE.PlaneGeometry(100, 100);
     const phongMaterial = new THREE.MeshPhongMaterial();
     const planeMesh = new THREE.Mesh(planeGeometry, phongMaterial);
-    planeMesh.position.y = 10;
+    planeMesh.position.y = -0.5;
     planeMesh.rotateX(-Math.PI / 2);
     planeMesh.receiveShadow = true;
     this.scene.add(planeMesh);
@@ -144,8 +144,8 @@ class Scene {
     this.world.addBody(planeBody);
 
     // Helpers
-    this.scene.add(new THREE.GridHelper(500, 500));
-    this.scene.add(new THREE.AxesHelper(10));
+    //this.scene.add(new THREE.GridHelper(500, 500));
+    //this.scene.add(new THREE.AxesHelper(10));
 
     this.addLights();
     createEnvironment(this.scene);
@@ -188,7 +188,7 @@ class Scene {
 
     for(let i = 0; i < 30; i++){
       let ball = new THREE.Mesh(new THREE.SphereGeometry(0.35, 20, 10), new THREE.MeshPhongMaterial({color: new THREE.Color(Math.random(), Math.random(), Math.random())}));
-      ball.position.set(Math.random()*20, Math.random()*20, Math.random()*20);
+      ball.position.set(getRandomFloat(-1, 1)*5, getRandomFloat(-1, 1)*5, getRandomFloat(-1, 1)*5);
       this.balls.push(ball);
       this.scene.add(ball);
       let ballshape = new CANNON.Sphere(1);
@@ -400,4 +400,12 @@ function CreateTrimesh(geometry) {
   }
   const indices = Object.keys(vertices).map(Number)
   return new CANNON.Trimesh(vertices, indices)
+}
+
+function getRandomFloat(min, max, decimals) {
+  const str = (Math.random() * (max - min) + min).toFixed(
+    decimals,
+  );
+
+  return parseFloat(str);
 }
